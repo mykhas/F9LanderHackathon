@@ -3,17 +3,24 @@
 const request = require('superagent')
 
 // libraries
-const synaptic = require('synaptic');
-const Neuron = synaptic.Neuron
-const Layer = synaptic.Layer
-const Network = synaptic.Network
-const Trainer = synaptic.Trainer
-const Architect = synaptic.Architect
+// const synaptic = require('synaptic');
+// const Neuron = synaptic.Neuron
+// const Layer = synaptic.Layer
+// const Network = synaptic.Network
+// const Trainer = synaptic.Trainer
+// const Architect = synaptic.Architect
 
 const START = [0, 0, 0, 1]
 const p = [1, 1, 1, 0]
 
-const TIME_STEP = 500
+const TIME_STEP = 1;
+const PANIC_ANGLE = 0.2;
+const SAFE_DISTANCE = 1;
+const DECELERATION_DISTANCE = 30;
+const SAFE_SPEED = -5;
+const DECELERATION_SPEED = -8;
+
+let previousState;
 
 function req(cmd, cb) {
     request
@@ -36,44 +43,85 @@ function restart(cb) {
     })
 }
 
-function left(cb) {
-    req('1000', (e, r) => {
+function executeState(state, cb) {
+    switch (Number(state).toString(2).length) {
+      case 3:
+        state = '0' + Number(state).toString(2);
+        break;
+      case 2:
+        state = '00' + Number(state).toString(2);
+        break;
+      case 1:
+        state = '000' + Number(state).toString(2);
+        break;
+      case 0:
+        state = '0000' + Number(state).toString(2);
+        break;
+      default:
+        state = Number(state).toString(2);
+        break;
+    }
+
+    req(state, (e, r) => {
         cb( r.body )
     })
 }
 
-function center(cb) {
-    req('0100', (e, r) => {
-        cb( r.body )
+function step(state) {
+    let newState = 8; // initial state, 1000
+    let ax = 0, ay = 0;
+
+    if (state === undefined) state = 14; // all duses are on, 1110
+
+    executeState(state, (e, r) => {
+        console.log(e, r);
+
+        if (e[1]) {
+          if (previousState) {
+            e[1].ax = e[1].vx - previousState.vx;
+            e[1].ay = e[1].vy - previousState.vy;
+          }
+          previousState = e[1];
+          console.log(e[1].vy)
+          console.log(e[1].ay)
+
+          if (e[1].dist <= DECELERATION_DISTANCE) {
+            if (e[1].vy >= SAFE_SPEED) { // we're going up
+              newState &= 0;
+            } else if (e[1].vy >= DECELERATION_SPEED) {
+              newState |= 8;
+            } else {
+              newState |= 14;
+            }
+          }
+
+          if (e[1].dist <= SAFE_DISTANCE) {
+            newState &= 0;
+          }
+
+          if(e[1].angle > PANIC_ANGLE) {
+            newState |= 2;
+          } else if (e[1].angle < -PANIC_ANGLE) {
+            newState |= 4;
+          }
+        }
+
+        setTimeout(() => { step(newState) }, TIME_STEP)
     })
-}
-
-function right(cb) {
-    req('0010', (e, r) => {
-        cb( r.body )
-    })
-}
-
-function step(cmd) {
-
-    center( (e, r) => {
-    console.log(e, r)
 
 
-        setTimeout(step, TIME_STEP)
-    })
-
-    
 }
 
 status( data => {
 
     restart( data => {
-        
+
+        previousState = {};
+
         step( () => {
             setTimeout(step, TIME_STEP)
         } )
 
     })
-    
+
 })
