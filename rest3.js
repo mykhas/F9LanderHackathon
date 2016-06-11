@@ -74,7 +74,7 @@ function step(state) {
     if (state === undefined) state = 14; // all duses are on, 1110
 
     executeState(state, (e, r) => {
-        console.log(e, r);
+        // console.log(e, r);
 
         if (e[1]) {
           if (previousState) {
@@ -82,10 +82,8 @@ function step(state) {
             e[1].ay = e[1].vy - previousState.vy;
           }
           previousState = e[1];
-          console.log(- 7 - 0.55 * e[1].py)
-          console.log(e[1].vy)
 
-          if (e[1].vy <= - 0.55 * e[1].py) { // we're going up
+          if (e[1].vy <= -  0.55 * e[1].py) { // we're going up
             if (e[1].vy <= - 0.8 * e[1].py) {
               newState |= 14;
             } else {
@@ -94,6 +92,9 @@ function step(state) {
           } else {
             newState &= 0;
           }
+
+          e[1].pxPredicted = (Math.tan(e[1].angle) * e[1].py) + e[1].px + e[1].wind;
+          console.log(e[1].pxPredicted);
 
           if(e[1].angle > PANIC_ANGLE) {
             newState |= 2;
