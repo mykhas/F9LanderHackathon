@@ -14,13 +14,21 @@ const START = [0, 0, 0, 1]
 const p = [1, 1, 1, 0]
 
 const TIME_STEP = 1;
+
 const PANIC_ANGLE = 0.2;
+const PANIC_ANGLE_ON_PLATFORM = 0.5;
+
 const SAFE_DISTANCE = 1;
 const DECELERATION_DISTANCE = 30;
+
 const SAFE_SPEED = -5;
 const DECELERATION_SPEED = -8;
 
-let previousState;
+const X_CENTER = 50;
+const X_SAFE_DISTANCE = 15;
+
+let previousState, firstState;
+let predictionByX;
 
 function req(cmd, cb) {
     request
@@ -77,10 +85,22 @@ function step(state) {
         // console.log(e, r);
 
         if (e[1]) {
-          if (previousState) {
+          if (previousState.px) {
             e[1].ax = e[1].vx - previousState.vx;
             e[1].ay = e[1].vy - previousState.vy;
+
+            // TODO: don't calculate wind influence on late steps
+            predictionByX = (((e[1].px - firstState.px)  / (e[1].py - firstState.py)) * -firstState.py) + Math.abs(firstState.px) + firstState.wind * 0.3;
+
+            if (predictionByX > X_CENTER + X_SAFE_DISTANCE) {
+              newState |= 4;
+            } else if (predictionByX < X_CENTER - X_SAFE_DISTANCE) {
+              newState |= 2;
+            }
+          } else {
+            firstState = e[1];
           }
+          // console.log('previousState', previousState.px);
           previousState = e[1];
 
           if (e[1].vy <= -  0.55 * e[1].py) { // we're going up
@@ -93,12 +113,16 @@ function step(state) {
             newState &= 0;
           }
 
-          e[1].pxPredicted = (Math.tan(e[1].angle) * e[1].py) + e[1].px + e[1].wind;
-          console.log(e[1].pxPredicted);
+          // if (!predictionOnWind[e[1].wind]) {
+          //   predictionOnWind[e[1].wind] = (Math.tan(e[1].angle) * e[1].py) + e[1].px;
+          //   console.log(predictionOnWind[e[1].wind]);
+          // }
 
-          if(e[1].angle > PANIC_ANGLE) {
+          let panicAngle = (e[1].px > 3) ? PANIC_ANGLE : PANIC_ANGLE_ON_PLATFORM;
+
+          if(e[1].angle > panicAngle) {
             newState |= 2;
-          } else if (e[1].angle < -PANIC_ANGLE) {
+          } else if (e[1].angle < -panicAngle) {
             newState |= 4;
           }
         }
@@ -114,6 +138,8 @@ status( data => {
     restart( data => {
 
         previousState = {};
+        firstState = {};
+        predictionByX = undefined;
 
         step( () => {
             setTimeout(step, TIME_STEP)
