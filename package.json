@@ -4,6 +4,7 @@
   "description": "",
   "main": "rest.js",
   "dependencies": {
+    "mathjs": "^3.2.1",
     "superagent": "^2.0.0"
   },
   "devDependencies": {},
