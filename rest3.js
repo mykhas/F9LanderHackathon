@@ -15,8 +15,8 @@ const p = [1, 1, 1, 0]
 
 const TIME_STEP = 1;
 
-const PANIC_ANGLE = 0.2;
-const PANIC_ANGLE_ON_PLATFORM = 0.5;
+const PANIC_ANGLE = 0.1;
+const PANIC_ANGLE_ON_PLATFORM = 0.1;
 
 const SAFE_DISTANCE = 1;
 const DECELERATION_DISTANCE = 30;
