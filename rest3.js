@@ -25,7 +25,7 @@ const SAFE_SPEED = -5;
 const DECELERATION_SPEED = -8;
 
 const X_CENTER = 50;
-const X_SAFE_DISTANCE = 15;
+const X_SAFE_DISTANCE = 10;
 
 let previousState, firstState;
 let predictionByX;
@@ -91,6 +91,8 @@ function step(state) {
 
             // TODO: don't calculate wind influence on late steps
             predictionByX = (((e[1].px - firstState.px)  / (e[1].py - firstState.py)) * -firstState.py) + Math.abs(firstState.px) + firstState.wind * 0.3;
+            // predictionByX = e[1].px
+            console.log(predictionByX);
 
             if (predictionByX > X_CENTER + X_SAFE_DISTANCE) {
               newState |= 4;
@@ -103,8 +105,10 @@ function step(state) {
           // console.log('previousState', previousState.px);
           previousState = e[1];
 
-          if (e[1].vy <= -  0.55 * e[1].py) { // we're going up
-            if (e[1].vy <= - 0.8 * e[1].py) {
+          // let speedC = Math.abs(firstState.wind) / 50 - 0.5;
+          let speedC = 0.35;
+          if (e[1].vy <= - speedC * e[1].py) { // we're going up
+            if (e[1].vy <= - (speedC + 0.1) * e[1].py) {
               newState |= 14;
             } else {
               newState |= 8;
@@ -117,6 +121,11 @@ function step(state) {
           //   predictionOnWind[e[1].wind] = (Math.tan(e[1].angle) * e[1].py) + e[1].px;
           //   console.log(predictionOnWind[e[1].wind]);
           // }
+
+          console.log(e[1].py);
+          if (e[1].py < 10 && e[1].vy <= 3 && e[1].px > X_CENTER - X_SAFE_DISTANCE && e[1].px < X_CENTER + X_SAFE_DISTANCE) {
+            newState &= 0;
+          }
 
           let panicAngle = (e[1].px > 3) ? PANIC_ANGLE : PANIC_ANGLE_ON_PLATFORM;
 
