@@ -14,9 +14,11 @@ const START = [0, 0, 0, 1]
 const p = [1, 1, 1, 0]
 
 const TIME_STEP = 1;
-const PANIC_ANGLE = 0.3;
+const PANIC_ANGLE = 0.2;
 const SAFE_DISTANCE = 1;
-const DECELERATION_DISTANCE = 40;
+const DECELERATION_DISTANCE = 30;
+const SAFE_SPEED = -5;
+const DECELERATION_SPEED = -8;
 
 let previousState;
 
@@ -80,9 +82,17 @@ function step(state) {
             e[1].ay = e[1].vy - previousState.vy;
           }
           previousState = e[1];
+          console.log(e[1].vy)
+          console.log(e[1].ay)
 
           if (e[1].dist <= DECELERATION_DISTANCE) {
-            newState |= 14;
+            if (e[1].vy >= SAFE_SPEED) { // we're going up
+              newState &= 0;
+            } else if (e[1].vy >= DECELERATION_SPEED) {
+              newState |= 8;
+            } else {
+              newState |= 14;
+            }
           }
 
           if (e[1].dist <= SAFE_DISTANCE) {
