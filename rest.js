@@ -16,7 +16,9 @@ const p = [1, 1, 1, 0]
 const TIME_STEP = 1;
 const PANIC_ANGLE = 0.3;
 const SAFE_DISTANCE = 1;
-const DECELERATION_DISTANCE = 17;
+const DECELERATION_DISTANCE = 40;
+
+let previousState;
 
 function req(cmd, cb) {
     request
@@ -65,6 +67,7 @@ function executeState(state, cb) {
 
 function step(state) {
     let newState = 8; // initial state, 1000
+    let ax = 0, ay = 0;
 
     if (state === undefined) state = 14; // all duses are on, 1110
 
@@ -72,6 +75,12 @@ function step(state) {
         console.log(e, r);
 
         if (e[1]) {
+          if (previousState) {
+            e[1].ax = e[1].vx - previousState.vx;
+            e[1].ay = e[1].vy - previousState.vy;
+          }
+          previousState = e[1];
+
           if (e[1].dist <= DECELERATION_DISTANCE) {
             newState |= 14;
           }
@@ -96,6 +105,8 @@ function step(state) {
 status( data => {
 
     restart( data => {
+
+        previousState = {};
 
         step( () => {
             setTimeout(step, TIME_STEP)
