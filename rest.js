@@ -16,6 +16,7 @@ const p = [1, 1, 1, 0]
 const TIME_STEP = 1;
 const PANIC_ANGLE = 0.3;
 const SAFE_DISTANCE = 1;
+const DECELERATION_DISTANCE = 17;
 
 function req(cmd, cb) {
     request
@@ -71,14 +72,18 @@ function step(state) {
         console.log(e, r);
 
         if (e[1]) {
-          if(e[1].angle > PANIC_ANGLE) {
-            newState |= 2;
-          } else if (e[1].angle < -PANIC_ANGLE) {
-            newState |= 4;
+          if (e[1].dist <= DECELERATION_DISTANCE) {
+            newState |= 14;
           }
 
           if (e[1].dist <= SAFE_DISTANCE) {
             newState &= 0;
+          }
+
+          if(e[1].angle > PANIC_ANGLE) {
+            newState |= 2;
+          } else if (e[1].angle < -PANIC_ANGLE) {
+            newState |= 4;
           }
         }
 
