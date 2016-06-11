@@ -38,42 +38,6 @@ function restart(cb) {
     })
 }
 
-function left(cb) {
-    req('1000', (e, r) => {
-        cb( r.body )
-    })
-}
-
-function center(cb) {
-    req('0100', (e, r) => {
-        cb( r.body )
-    })
-}
-
-function right(cb) {
-    req('0010', (e, r) => {
-        cb( r.body )
-    })
-}
-
-function centerLeft(cb) {
-    req('1100', (e, r) => {
-        cb( r.body )
-    })
-}
-
-function centerAll(cb) {
-    req('1110', (e, r) => {
-        cb( r.body )
-    })
-}
-
-function centerRight(cb) {
-    req('0110', (e, r) => {
-        cb( r.body )
-    })
-}
-
 function executeState(state, cb) {
     switch (Number(state).toString(2).length) {
       case 3:
