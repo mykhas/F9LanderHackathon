@@ -23,6 +23,7 @@ const DECELERATION_DISTANCE = 30;
 
 const SAFE_SPEED = -5;
 const DECELERATION_SPEED = -8;
+const SPEED_TO_PY = 0.35;
 
 const X_CENTER = 50;
 const X_SAFE_DISTANCE = 10;
@@ -106,7 +107,7 @@ function step(state) {
           previousState = e[1];
 
           // let speedC = Math.abs(firstState.wind) / 50 - 0.5;
-          let speedC = 0.35;
+          let speedC = SPEED_TO_PY;
           if (e[1].vy <= - speedC * e[1].py) { // we're going up
             if (e[1].vy <= - (speedC + 0.1) * e[1].py) {
               newState |= 14;
