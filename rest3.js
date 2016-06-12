@@ -48,7 +48,7 @@ function status(cb) {
 
 function restart(cb) {
     req('0001', (e, r) => {
-        cb( r.body )
+        cb( r ? r.body : undefined )
     })
 }
 
@@ -72,11 +72,11 @@ function executeState(state, cb) {
     }
 
     req(state, (e, r) => {
-        cb( r.body )
+        cb( r ? r.body : undefined  )
     })
 }
 
-function step(state) {
+function step(state, data) {
     let newState = 0; // initial state, 1000
     let ax = 0, ay = 0;
 
@@ -85,7 +85,7 @@ function step(state) {
     executeState(state, (e, r) => {
         // console.log(e, r);
 
-        if (e[1]) {
+        if (e && e[1]) {
           if (previousState.px) {
             e[1].ax = e[1].vx - previousState.vx;
             e[1].ay = e[1].vy - previousState.vy;
@@ -135,6 +135,20 @@ function step(state) {
           } else if (e[1].angle < -panicAngle) {
             newState |= 4;
           }
+
+          if(e && e[2] && e[2].is_terminal_state) {
+            restart(() => { data => {
+
+              previousState = {};
+              firstState = {};
+              predictionByX = undefined;
+
+              step( (undefined, data) => {
+                  setTimeout(step, TIME_STEP)
+              } )
+
+          }});
+          }
         }
 
         setTimeout(() => { step(newState) }, TIME_STEP)
@@ -151,7 +165,7 @@ status( data => {
         firstState = {};
         predictionByX = undefined;
 
-        step( () => {
+        step( (undefined, data) => {
             setTimeout(step, TIME_STEP)
         } )
 
