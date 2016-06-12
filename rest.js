@@ -52,23 +52,10 @@ function restart(cb) {
   })
 }
 
-function executeState(state, cb) {
-  switch (Number(state).toString(2).length) {
-    case 3:
-      state = '0' + Number(state).toString(2);
-      break;
-    case 2:
-      state = '00' + Number(state).toString(2);
-      break;
-    case 1:
-      state = '000' + Number(state).toString(2);
-      break;
-    case 0:
-      state = '0000' + Number(state).toString(2);
-      break;
-    default:
-      state = Number(state).toString(2);
-      break;
+function executeState(stateNumber, cb) {
+  let state = Number(stateNumber).toString(2).length;
+  while (state.length < 4) {
+    state = '0' + state;
   }
 
   req(state, (e, r) => {
