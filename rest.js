@@ -2,14 +2,6 @@
 
 const request = require('superagent')
 
-// libraries
-// const synaptic = require('synaptic');
-// const Neuron = synaptic.Neuron
-// const Layer = synaptic.Layer
-// const Network = synaptic.Network
-// const Trainer = synaptic.Trainer
-// const Architect = synaptic.Architect
-
 const START = [0, 0, 0, 1]
 const p = [1, 1, 1, 0]
 
@@ -64,23 +56,21 @@ function executeState(stateNumber, cb) {
 }
 
 function step(state, data) {
-  let newState = 0; // initial state, 1000
+  let newState = 0; // initial state, 0000
   let ax = 0,
     ay = 0;
 
   if (state === undefined) state = 14; // all duses are on, 1110
 
   executeState(state, (e, r) => {
-    // console.log(e, r);
-
     if (e && e[1]) {
       if (previousState.px) {
         e[1].ax = e[1].vx - previousState.vx;
         e[1].ay = e[1].vy - previousState.vy;
 
         // TODO: don't calculate wind influence on late steps
+        // predictionByX = (Math.tan(e[1].angle) * e[1].py) + e[1].px;
         predictionByX = (((e[1].px - firstState.px) / (e[1].py - firstState.py)) * -firstState.py) + Math.abs(firstState.px) + firstState.wind * 0.3;
-        // predictionByX = e[1].px
         console.log(predictionByX);
 
         if (predictionByX > X_CENTER + X_SAFE_DISTANCE) {
@@ -91,7 +81,6 @@ function step(state, data) {
       } else {
         firstState = e[1];
       }
-      // console.log('previousState', previousState.px);
       previousState = e[1];
 
       // let speedC = Math.abs(firstState.wind) / 50 - 0.5;
@@ -106,12 +95,6 @@ function step(state, data) {
         newState &= 0;
       }
 
-      // if (!predictionOnWind[e[1].wind]) {
-      //   predictionOnWind[e[1].wind] = (Math.tan(e[1].angle) * e[1].py) + e[1].px;
-      //   console.log(predictionOnWind[e[1].wind]);
-      // }
-
-      console.log(e[1].py);
       if (e[1].py < 10 && e[1].vy <= 3 && e[1].px > X_CENTER - X_SAFE_DISTANCE && e[1].px < X_CENTER + X_SAFE_DISTANCE) {
         newState &= 0;
       }
